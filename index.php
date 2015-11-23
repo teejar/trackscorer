@@ -54,43 +54,75 @@
             echo "0 results";
         }
 
-        // käydään läpi kaikki kartat
-        foreach ($tracksArray as $track) {
-            // get player times from database
-            $query  = "SELECT challenge_id, challenge_uid, challenge_name, record_playerlogin, record_score, player_nickname, player_login FROM exp_maps, exp_records, exp_players WHERE challenge_uid = '".$track['trackuid']."' AND record_playerlogin = player_login ORDER BY challenge_id ASC, record_score ASC";
-            $result = mysqli_query($conn, $query);
-            $i      = 0;
-            if (mysqli_num_rows($result) > 0) {
-                while ($row = mysqli_fetch_assoc($result)) {
-                    $login               = $row["player_login"];
-                    $playerArray[$login] = $row["player_nickname"];
-                    if (array_key_exists($login, $recordsArray)) {
-                        // tässä pitäis laskee $i;n paikalle pisteet, nythän se antaa vain database sijoituksen...
-                        $recordsArray[$login] += $i;
-                    } else {
-                        $recordsArray[$login] = $i;
-                    }
-                    $i++;
+
+        // get player times from database
+        $query  = "SELECT challenge_id, challenge_uid, challenge_name, record_playerlogin, record_score, player_nickname, player_login FROM exp_maps, exp_records, exp_players WHERE challenge_uid = record_challengeuid AND record_playerlogin = player_login ORDER BY challenge_id ASC, record_score ASC";
+        $result = mysqli_query($conn, $query);
+        $i      = 0;
+
+        $pointsArray = array(5, 4, 3, 2, 1);
+
+        $id         = -1;
+        $recsPerMap = 0;
+        $map        = 0;
+
+        if (mysqli_num_rows($result) > 0) {
+            $rank = 0;
+
+            while ($row = mysqli_fetch_assoc($result)) {
+                // tässä tehdään puskuri
+                // radan id vaihtuu aina kun rata vaihduu.. daa, eli jos radan id on eri kun bufferin id on kyseessä uusi rata
+                if ($row['challenge_id'] != $id) {
+                    echo "num recs @ ".$row['challenge_id'].": ".$recsPerMap."<br>";
+
+                    $rank       = 0;                    // rank nollataan
+                    $recsPerMap = 0;              // rank ratalaskuri nollataan (tää on turha, voi poistaa, mutta auttoi debuggaamaan)
+                    // bufferiin lisätään nykyinen uusi rataid, tämä pitää olla tämän iffin sisällä, tai muuten if-lause ei koskaan toteudu
+                    $id         = $row['challenge_id'];
                 }
-            } else {
-                echo "0 results";
+                // apumuuttujat
+                $login               = $row["player_login"];
+                $playerArray[$login] = $row["player_nickname"];
+
+                // mikäli array:ssä on jo login
+                if (array_key_exists($login, $recordsArray)) {
+
+                    // tässä muunnetaan pelaajan rank-sijoitus, pisteiksi
+                    $points = 1;   // aina annetaan yksi piste
+                    if (isset($pointsArray[$rank])) {
+                        $points = $pointsArray[$rank]; // muussa tapauksessa point-arrayn mukaiset pisteet
+                    }
+
+                    // mikäli arrayssä on login, lisätään pisteet
+                    $recordsArray[$login] += $points;
+                } else {
+                
+                    // muussa tapauksessa sijoitetaan aloituspisteet
+                    $recordsArray[$login] = $points;
+                }
+                
+                // lisätään laskurit
+                $i++;
+                $recsPerMap++;
             }
-            $i = 0;
+        } else {
+            echo "0 results";
         }
-        
+        $i = 0;
+
         arsort($recordsArray);
-        
+        echo "<pre>";
         print_r($recordsArray);
-        
+
         mysqli_close($conn);
 
 //convert arrays to javascript
         include "jsonEncodeScript.php";
         ?>
-        <!--
-        ///////////////////////////////////////////
 
-        ///////////////////////////////////////////
+        <!--  ///////////////////////////////////////////
+
+          ///////////////////////////////////////////
         -->
         <script src="jquery-2.1.4.min.js"></script>
 
@@ -183,6 +215,5 @@
             DisplayRecords();
 
         </script>
-
     </body>
 </html>
