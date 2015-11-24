@@ -1,79 +1,78 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-        <title>Trackmania</title>
-        <style>
-            #body {
-                background-color: #565656;
-            }
-            #trackLists{
-                background-color: #565656;
-            }
-        </style>
-    </head>
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+    <title>Trackmania</title>
+    <style>
+    #body {
+        background-color: #565656;
+    }
+    #trackLists{
+        background-color: #565656;
+    }
+    </style>
+</head>
 
-    <body id="body">
+<body id="body">
 
-        <div id="topScores">Tähän tulee TOP 5 taulukko.</div>
-        <div id="trackLists"></div>
+    <div id="topScores">Top Scoring Players<br></div>
+    <div id="trackLists"></div>
 
-        <?php
-        require_once('./classes/tmfcolorparser.inc.php');
+    <?php
+    require_once('./classes/tmfcolorparser.inc.php');
 
-        include "dbConnect.php";
-        mysqli_query($conn, "SET NAMES utf8");
-        $cp           = new TMFcolorParser();
-        // pelaajien  pisteet $recordsArray['wd'] = 1;
-        $recordsArray = array();
-        $tracksArray  = array();
-        // pelaajien nicknamet $recordsArray['wd'] = "whited";
-        $playerArray  = array();
-
-        $playerRecordsArray = array();
-        $loopNumber         = 1;
+    include "dbConnect.php";
+    mysqli_query($conn, "SET NAMES utf8");
+    $cp           = new TMFcolorParser();
+        // pelaajien  pisteet $topScoresArray['wd'] = 1;
+    $topScoresArray = array();
+    $recordsArray = array();
+    $tracksArray  = array();
+        // pelaajien nicknamet $topScoresArray['wd'] = "whited";
+    $playerArray  = array();
+    $playertopScoresArray = array();
+    $loopNumber         = 1;
 
 // get track names from database
-        $query = "SELECT * FROM exp_maps";
+    $query = "SELECT * FROM exp_maps";
 
-        $result = mysqli_query($conn, $query);
-        $i      = 0;
-        if (mysqli_num_rows($result) > 0) {
-            while ($row = mysqli_fetch_assoc($result)) {
+    $result = mysqli_query($conn, $query);
+    $i      = 0;
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_assoc($result)) {
 
-                $tname = $row["challenge_name"];
+            $tname = $row["challenge_name"];
 
-                $tracksArray[$i] = array(
-                    "trackNum" => $row["challenge_id"],
-                    "trackuid" => $row["challenge_uid"],
-                    "trackName" => $cp->toHTML($tname, false, true)
+            $tracksArray[$i] = array(
+                "trackNum" => $row["challenge_id"],
+                "trackuid" => $row["challenge_uid"],
+                "trackName" => $cp->toHTML($tname, false, true)
                 );
-                $i++;
-            }
-        } else {
-            echo "0 results";
+            $i++;
         }
-
+    } else {
+        echo "0 results";
+    }
 
         // get player times from database
-        $query  = "SELECT challenge_id, challenge_uid, challenge_name, record_playerlogin, record_score, player_nickname, player_login FROM exp_maps, exp_records, exp_players WHERE challenge_uid = record_challengeuid AND record_playerlogin = player_login ORDER BY challenge_id ASC, record_score ASC";
-        $result = mysqli_query($conn, $query);
-        $i      = 0;
+    $query  = "SELECT challenge_id, challenge_uid, challenge_name, record_playerlogin, record_score, player_nickname, player_login FROM exp_maps, exp_records, exp_players WHERE challenge_uid = record_challengeuid AND record_playerlogin = player_login ORDER BY challenge_id ASC, record_score ASC";
+    $result = mysqli_query($conn, $query);
+    $i      = 0;
 
-        $pointsArray = array(5, 4, 3, 2, 1);
+    $pointsArray = array(5, 4, 3, 2, 1);
 
-        $id         = -1;
-        $recsPerMap = 0;
-        $map        = 0;
+    $id         = -1;
+    $recsPerMap = 0;
+    $map        = 0;
 
-        if (mysqli_num_rows($result) > 0) {
-            $rank = 0;
+    if (mysqli_num_rows($result) > 0) {
+        $rank = 0;
 
-            while ($row = mysqli_fetch_assoc($result)) {
+        while ($row = mysqli_fetch_assoc($result)) {
                 // tässä tehdään puskuri
                 // radan id vaihtuu aina kun rata vaihduu.. daa, eli jos radan id on eri kun bufferin id on kyseessä uusi rata
-                if ($row['challenge_id'] != $id) {
-                    echo "num recs @ ".$row['challenge_id'].": ".$recsPerMap."<br>";
+            if ($row['challenge_id'] != $id) {
+                  //  echo "num recs @ ".$row['challenge_id'].": ".$recsPerMap."<br>";
 
                     $rank       = 0;                    // rank nollataan
                     $recsPerMap = 0;              // rank ratalaskuri nollataan (tää on turha, voi poistaa, mutta auttoi debuggaamaan)
@@ -84,8 +83,16 @@
                 $login               = $row["player_login"];
                 $playerArray[$login] = $row["player_nickname"];
 
-                // mikäli array:ssä on jo login
-                if (array_key_exists($login, $recordsArray)) {
+                $playernickname = $row["player_nickname"];
+
+                // make array for showing track times
+                $recordsArray[$i] = array(
+                 "trackNum" => $row["challenge_id"],
+                 "playerName" => $cp->toHTML($playernickname, false, true),
+                 "playerLogin" => $row["player_login"],
+                 "trackuid" => $row["challenge_uid"],
+                 "playerTime" => $row["record_score"]
+                 );
 
                     // tässä muunnetaan pelaajan rank-sijoitus, pisteiksi
                     $points = 1;   // aina annetaan yksi piste
@@ -93,54 +100,59 @@
                         $points = $pointsArray[$rank]; // muussa tapauksessa point-arrayn mukaiset pisteet
                     }
 
+                    // mikäli array:ssä on jo login
+                    if (array_key_exists($login, $topScoresArray)) {
+
+
                     // mikäli arrayssä on login, lisätään pisteet
-                    $recordsArray[$login] += $points;
-                } else {
-                
+                        $topScoresArray[$login] += $points;
+                    } else {
+
                     // muussa tapauksessa sijoitetaan aloituspisteet
-                    $recordsArray[$login] = $points;
-                }
-                
+                        $topScoresArray[$login] = $points;
+                    }
+
                 // lisätään laskurit
-                $i++;
-                $recsPerMap++;
+                    $i++;
+                    $recsPerMap++;
+                }
+            } else {
+                echo "0 results";
             }
-        } else {
-            echo "0 results";
-        }
-        $i = 0;
+            $i = 0;
 
-        arsort($recordsArray);
-        echo "<pre>";
-        print_r($recordsArray);
+            arsort($topScoresArray);
 
-        mysqli_close($conn);
+            $topScoresArrayKeys = array_keys($topScoresArray); //array keys so that top scoring players can be printed
 
-//convert arrays to javascript
-        include "jsonEncodeScript.php";
-        ?>
+            mysqli_close($conn);
 
-        <!--  ///////////////////////////////////////////
+            //convert some arrays to javascript
+            include "jsonEncodeScript.php";
+            ?>
 
-          ///////////////////////////////////////////
-        -->
-        <script src="jquery-2.1.4.min.js"></script>
+            <script src="jquery-2.1.4.min.js"></script>
 
-        <script type="text/javascript">
+            <script type="text/javascript">
 
-            var kek = 0;
-
+            <?php
+            // print top scoring players
+            for ($i=0;$i<5;$i++){
+                $printScoreKey = $topScoresArrayKeys[$i];
+                $convertString = $playerArray[$printScoreKey];
+                $printScoreNick = $cp->toHTML($convertString, false, true);
+                echo "document.getElementById(\"topScores\").innerHTML += \"".$printScoreNick."\"+ ' - ' + \"".$topScoresArray[$printScoreKey]."\" + '<br>';";
+            }
+            ?>
 
             var pointArray = [5, 4, 3, 2, 1, 0];
             var num = 1;
             var numOfRecords = records_array.length;
             var numOftracks = tracks_array.length;
-            var recordsArrayByTrack = []; //store scores by track
-            var recordsArrayByTrackNumber = 1;
+            var topScoresArrayByTrack = []; //store scores by track
+            var topScoresArrayByTrackNumber = 1;
 
-
-            function backButton()
-            {
+            function backButton() {
                 document.getElementById(
                     "trackLists").innerHTML = "";
                 if (num == 1) {
@@ -180,17 +192,15 @@
                     "trackLists").innerHTML += "<button type='button' onClick='forwardButton()'>forward</button>";
                 document.getElementById(
                     "trackLists").innerHTML += " <br>";
-                document.getElementById(
-                    "trackLists").innerHTML += " <br>";
                 for (var i = 0; i < 848; i++)
                 {
                     if (records_array[i].trackNum == num)
                     {
                         var ms = records_array[i].playerTime,
-                            minute = (ms / 1000 / 60) << 0,
-                            second = Math.floor((
-                                ms / 1000) % 60),
-                            millisecond = ms % 1000;
+                        minute = (ms / 1000 / 60) << 0,
+                        second = Math.floor((
+                            ms / 1000) % 60),
+                        millisecond = ms % 1000;
                         var milsec = millisecond.toString();
                         if (milsec.length < 3) {
                             milsec = "0" + milsec;
@@ -204,16 +214,15 @@
                         document.getElementById(
                             "trackLists").innerHTML += displaytime;
                         document.getElementById(
-                            "trackLists").innerHTML += " DEBUG " + records_array[i].playerTime;
-                        document.getElementById(
                             "trackLists").innerHTML += "<br>";
 
                     }
                 }
             }
-
             DisplayRecords();
 
-        </script>
-    </body>
-</html>
+
+            </script>
+
+        </body>
+        </html>

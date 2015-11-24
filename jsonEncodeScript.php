@@ -36,5 +36,9 @@ $js_array1 = _json_encode($recordsArray);
 echo "var records_array = ". $js_array1 . ";\n";
 $js_array2 = _json_encode($tracksArray);
 echo "var tracks_array = ". $js_array2 . ";\n";
+/*
+$js_array3 = _json_encode($topScoresArray);
+echo "var scores_array = ". $js_array3 . ";\n";
+*/
 ?>
 </script>
