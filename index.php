@@ -52,36 +52,26 @@
     }
 
 //get player times from database
-    $query = "SELECT challenge_id, challenge_uid, challenge_name, record_playerlogin, record_score, player_nickname, player_login FROM exp_maps, exp_records, exp_players WHERE challenge_uid = record_challengeuid AND record_playerlogin = player_login ORDER BY challenge_id ASC, record_score ASC ";
+    $query = "SELECT challenge_id, challenge_uid, challenge_name, record_playerlogin, record_score, player_nickname, player_login FROM exp_maps, exp_records, exp_players WHERE challenge_uid = record_challengeuid AND record_playerlogin = player_login ORDER BY challenge_id ASC, record_score ASC";
     $result = mysqli_query($conn, $query);
     $i=0;
     if (mysqli_num_rows($result) > 0) {
         while($row = mysqli_fetch_assoc($result)) {
-
             $playernickname = $row["player_nickname"];
-
-            $recordsArray[$i] = array(
-               "trackNum" => $row["challenge_id"],
-               "playerName" => $cp->toHTML($playernickname, false, true),
-               "playerLogin" => $row["player_login"],
-               "trackuid" => $row["challenge_uid"],
-               "playerTime" => $row["record_score"]
-               );
+            $recordsArray[$i] = new score($i, $row["player_login"],$cp->toHTML($playernickname, false, true));
             $i++;
         }
     }
     else {
         echo "0 results";
     }
-
     mysqli_close($conn);
-
 
 class score {
     /* @var string */
     public $nick, $login;
     /* @var integer */
-    public $score = 0;  
+    public $score = 0;
     /* @var integer */
     public $total = 0;
     /* @var integer[] */
@@ -91,7 +81,7 @@ class score {
         $this->nick = $nick;
         $this->login = $login;
             $points = 1; // jokatapauksessa annetaan yksi piste, jos on pelannut kartan.
-            if (array_key_exists($rank, $scoresystem)) {
+            if (array_key_exists($rank, $this->$scoresystem)) {
                 $points = $this->scoresystem[$rank]; // muussa tapauksessa rank:in mukaan valitaan scoresysteemistä pistemäärä
             }
             $this->score = $points;
@@ -101,6 +91,8 @@ class score {
             $this->total += $score;
         }
     }
+
+    print_r($recordsArray);
     /* @var score[] $points */
   //  $points = array(); 
 
