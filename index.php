@@ -3,8 +3,8 @@
 <head>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
     <title>Trackmania</title>
-    <style>
-    #body {
+    <style type="text/css">
+    body {
         background-color: #565656;
     }
     #trackLists{
@@ -14,9 +14,6 @@
 </head>
 
 <body id="body">
-
-    <div id="topScores">Top Scoring Players<br></div>
-    <div id="trackLists"></div>
 
     <?php
     require_once('./classes/tmfcolorparser.inc.php');
@@ -87,12 +84,12 @@
 
                 // make array for showing track times
                 $recordsArray[$i] = array(
-                 "trackNum" => $row["challenge_id"],
-                 "playerName" => $cp->toHTML($playernickname, false, true),
-                 "playerLogin" => $row["player_login"],
-                 "trackuid" => $row["challenge_uid"],
-                 "playerTime" => $row["record_score"]
-                 );
+                   "trackNum" => $row["challenge_id"],
+                   "playerName" => $cp->toHTML($playernickname, false, true),
+                   "playerLogin" => $row["player_login"],
+                   "trackuid" => $row["challenge_uid"],
+                   "playerTime" => $row["record_score"]
+                   );
 
                     // tässä muunnetaan pelaajan rank-sijoitus, pisteiksi
                     $points = 1;   // aina annetaan yksi piste
@@ -130,20 +127,46 @@
             //convert some arrays to javascript
             include "jsonEncodeScript.php";
             ?>
+            <div id="topScores">Top Scoring Players<br>
+                <?php
+            // print top scoring players
+                for ($i=0;$i<5;$i++){
+                    $printScoreKey = $topScoresArrayKeys[$i];
+                    $convertString = $playerArray[$printScoreKey];
+                    $printScoreNick = $cp->toHTML($convertString, false, true);
+                    echo $printScoreNick." - ".$topScoresArray[$printScoreKey]."<br>";
+                }
+                ?>
 
+                <?php
+                //If we submitted the form
+                if(isset($_POST['loadmoreScores']))
+                {
+                    printMoreScores($topScoresArrayKeys, $playerArray, $cp, $topScoresArray);
+                }
+                //If we haven't submitted the form
+                else
+                {
+                    echo  '<form action="index.php" method="POST">';
+                    echo   '<input type="submit" value="Load more scores" name="loadmoreScores">';
+                    echo   '</form>';
+                }
+                //load rest of the stuff in the scoreboards
+                function printMoreScores($a,$b,$c,$d){
+                    for ($i=5;$i<count($d);$i++){
+                        $printScoreKey = $a[$i];
+                        $convertString = $b[$printScoreKey];
+                        $printScoreNick = $c->toHTML($convertString, false, true);
+                        echo $printScoreNick." - ".$d[$printScoreKey]."<br>";
+                    }
+                }
+                ?>
+
+            </div>
+            <div id="trackLists"></div>
             <script src="jquery-2.1.4.min.js"></script>
 
             <script type="text/javascript">
-
-            <?php
-            // print top scoring players
-            for ($i=0;$i<5;$i++){
-                $printScoreKey = $topScoresArrayKeys[$i];
-                $convertString = $playerArray[$printScoreKey];
-                $printScoreNick = $cp->toHTML($convertString, false, true);
-                echo "document.getElementById(\"topScores\").innerHTML += \"".$printScoreNick."\"+ ' - ' + \"".$topScoresArray[$printScoreKey]."\" + '<br>';";
-            }
-            ?>
 
             var pointArray = [5, 4, 3, 2, 1, 0];
             var num = 1;
@@ -175,7 +198,6 @@
 
                 DisplayRecords();
             }
-
             function DisplayRecords() {
                 var tnum = num - 1;
                 document.getElementById(
@@ -205,7 +227,6 @@
                         if (milsec.length < 3) {
                             milsec = "0" + milsec;
                         }
-
                         var displaytime = minute + ":" + second + "," + milsec;
                         document.getElementById(
                             "trackLists").innerHTML += records_array[i].playerName;
@@ -215,7 +236,6 @@
                             "trackLists").innerHTML += displaytime;
                         document.getElementById(
                             "trackLists").innerHTML += "<br>";
-
                     }
                 }
             }
