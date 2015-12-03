@@ -84,12 +84,12 @@
 
                 // make array for showing track times
                 $recordsArray[$i] = array(
-                   "trackNum" => $row["challenge_id"],
-                   "playerName" => $cp->toHTML($playernickname, false, true),
-                   "playerLogin" => $row["player_login"],
-                   "trackuid" => $row["challenge_uid"],
-                   "playerTime" => $row["record_score"]
-                   );
+                 "trackNum" => $row["challenge_id"],
+                 "playerName" => $cp->toHTML($playernickname, false, true),
+                 "playerLogin" => $row["player_login"],
+                 "trackuid" => $row["challenge_uid"],
+                 "playerTime" => $row["record_score"]
+                 );
 
                     // tässä muunnetaan pelaajan rank-sijoitus, pisteiksi
                     $points = 1;   // aina annetaan yksi piste
@@ -127,51 +127,116 @@
             //convert some arrays to javascript
             include "jsonEncodeScript.php";
             ?>
-            <div id="topScores">Top Scoring Players<br>
-                <?php
+
+
+
+<!--
+TOP SCORES
+-->
+<div id="topScores">
+    <table id="topScoreTable">
+        <tr>
+            <th>Top Scores</th>
+        </tr>
+        <tr>
+            <th>Name</th>
+            <th>Score</th>
+        </tr>
+        <?php
             // print top scoring players
-                for ($i=0;$i<5;$i++){
-                    $printScoreKey = $topScoresArrayKeys[$i];
-                    $convertString = $playerArray[$printScoreKey];
-                    $printScoreNick = $cp->toHTML($convertString, false, true);
-                    echo $printScoreNick." - ".$topScoresArray[$printScoreKey]."<br>";
-                }
-                ?>
-
-                <?php
+        for ($i=0;$i<5;$i++){
+            $printScoreKey = $topScoresArrayKeys[$i];
+            $convertString = $playerArray[$printScoreKey];
+            $printScoreNick = $cp->toHTML($convertString, false, true);
+            echo "<tr>";
+            echo "<td>".$printScoreNick."</td><td>".$topScoresArray[$printScoreKey]."</td>";
+            echo "</tr>";
+        }
+        ?>
+        <?php
                 //If we submitted the form
-                if(isset($_POST['loadmoreScores']))
-                {
-                    printMoreScores($topScoresArrayKeys, $playerArray, $cp, $topScoresArray);
-                }
+        if(isset($_POST['loadmoreScores']))
+        {
+            printMoreScores($topScoresArrayKeys, $playerArray, $cp, $topScoresArray);
+            echo "</table>" ;
+        }
                 //If we haven't submitted the form
-                else
-                {
-                    echo  '<form action="index.php" method="POST">';
-                    echo   '<input type="submit" value="Load more scores" name="loadmoreScores">';
-                    echo   '</form>';
-                }
+        else
+        {
+            echo "    </table>";
+            echo  '<form action="index.php" method="POST">';
+            echo   '<input type="submit" value="Load more scores" name="loadmoreScores">';
+            echo   '</form>';
+
+        }
                 //load rest of the stuff in the scoreboards
-                function printMoreScores($a,$b,$c,$d){
-                    for ($i=5;$i<count($d);$i++){
-                        $printScoreKey = $a[$i];
-                        $convertString = $b[$printScoreKey];
-                        $printScoreNick = $c->toHTML($convertString, false, true);
-                        echo $printScoreNick." - ".$d[$printScoreKey]."<br>";
-                    }
-                }
-                ?>
+        function printMoreScores($a,$b,$c,$d){
+            for ($i=5;$i<count($d);$i++){
+                $printScoreKey = $a[$i];
+                $convertString = $b[$printScoreKey];
+                $printScoreNick = $c->toHTML($convertString, false, true);
+                echo "<tr>";
+                echo "<td>".$printScoreNick."</td><td>".$d[$printScoreKey]."</td>";
+                echo "</tr>";
+            }
+        }
+        ?>
+    </div>
+<!--
+TRACKLIST
+-->
 
-            </div>
-            <div id="trackLists"></div>
-            <script src="jquery-2.1.4.min.js"></script>
 
-            <script type="text/javascript">
+<div id="trackLists"></div>
+<script src="jquery-2.1.4.min.js"></script>
+<table id="trackScoreTable">
+    <tr>
+        <th>Top Scores</th>
+    </tr>
+<?php
+//print_r($recordsArray[0]);
+//echo $recordsArray[0]["trackuid"];
+$numOftracks = count($tracksArray);
+$num = 1;
 
-            var pointArray = [5, 4, 3, 2, 1, 0];
-            var num = 1;
-            var numOfRecords = records_array.length;
-            var numOftracks = tracks_array.length;
+if (isset($POST['loadPreviousTracksScores']))
+{
+echo "echo";
+}
+else
+{
+echo $tracksArray[$num-1]["trackName"]. " ";
+echo $num. " / ". $numOftracks;
+echo '<form action="index.php" method="POST">';
+echo '<input type="submit" value="<<" name="loadPreviousTracksScores">';
+echo '<input type="submit" value=">>" name="loadNextTracksScores">';
+echo '</form>';
+}
+//for($i=0;$i<count();$i++){
+
+
+
+//}
+
+?>
+    <tr>
+        <th>Name</th>
+        <th>Time</th>
+    </tr>
+
+
+
+</table>
+
+
+
+
+<script type="text/javascript">
+/*
+var pointArray = [5, 4, 3, 2, 1, 0];
+var num = 1;
+var numOfRecords = records_array.length;
+var numOftracks = tracks_array.length;
             var topScoresArrayByTrack = []; //store scores by track
             var topScoresArrayByTrackNumber = 1;
 
@@ -241,7 +306,7 @@
             }
             DisplayRecords();
 
-
+            */
             </script>
 
         </body>
