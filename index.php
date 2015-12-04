@@ -125,11 +125,8 @@
             mysqli_close($conn);
 
             //convert some arrays to javascript
-            include "jsonEncodeScript.php";
+            //include "jsonEncodeScript.php";
             ?>
-
-
-
 <!--
 TOP SCORES
 -->
@@ -154,16 +151,14 @@ TOP SCORES
         }
         ?>
         <?php
-                //If we submitted the form
         if(isset($_POST['loadmoreScores']))
         {
             printMoreScores($topScoresArrayKeys, $playerArray, $cp, $topScoresArray);
             echo "</table>" ;
         }
-                //If we haven't submitted the form
         else
         {
-            echo "    </table>";
+            echo "</table>";
             echo  '<form action="index.php" method="POST">';
             echo   '<input type="submit" value="Load more scores" name="loadmoreScores">';
             echo   '</form>';
@@ -185,53 +180,104 @@ TOP SCORES
 <!--
 TRACKLIST
 -->
-
-
 <div id="trackLists"></div>
 <script src="jquery-2.1.4.min.js"></script>
 <table id="trackScoreTable">
     <tr>
-        <th>Top Scores</th>
+        <th>Scores by track</th>
     </tr>
-<?php
-//print_r($recordsArray[0]);
-//echo $recordsArray[0]["trackuid"];
-$numOftracks = count($tracksArray);
-$num = 1;
-
-if (isset($POST['loadPreviousTracksScores']))
-{
-echo "echo";
-}
-else
-{
-echo $tracksArray[$num-1]["trackName"]. " ";
-echo $num. " / ". $numOftracks;
-echo '<form action="index.php" method="POST">';
-echo '<input type="submit" value="<<" name="loadPreviousTracksScores">';
-echo '<input type="submit" value=">>" name="loadNextTracksScores">';
-echo '</form>';
-}
-//for($i=0;$i<count();$i++){
-
-
-
-//}
-
-?>
     <tr>
         <th>Name</th>
         <th>Time</th>
     </tr>
 
+    <?php
 
+//print_r($recordsArray[0]);
+//echo $recordsArray[0]["trackuid"];
+    $numOftracks = count($tracksArray);
+    $num = 1;
+    $typed = false;
 
-</table>
+    //load number
+    if (isset($_POST['tracknumTransition']))
+    {
+        if ($_POST['tracknumTransition']>$numOftracks)
+        {
+            $typed = true;
+            $_POST["currentTracknum"] = $numOftracks;
+        }
+        if ($_POST['tracknumTransition'] != $_POST["currentTracknum"] && $_POST['tracknumTransition'] <= $numOftracks)
+        {
+            $typed = true;
+            $_POST["currentTracknum"] = $_POST['tracknumTransition'];
+        }
+    }
+    // load previous
+    if (isset($_POST['loadPreviousTracksScores']))
+    {
+        if ($typed == false) $_POST["currentTracknum"]--;
+        if ($_POST["currentTracknum"]==0 && $typed == false) $_POST["currentTracknum"] = $numOftracks;
+    }
 
+    //load next
+    if (isset($_POST['loadNextTracksScores']))
+    {
+        if ($typed == false) $_POST["currentTracknum"]++;
+        if ($_POST["currentTracknum"]>$numOftracks && $typed == false) $_POST["currentTracknum"] = 1;
+    }
+    if (isset($_POST['currentTracknum']))
+    {
+        $typed = false;
+        echo $tracksArray[$_POST["currentTracknum"]-1]["trackName"];
+        echo '<form action="index.php" method="POST">';
+        echo '<input type="number" size="1" maxlength="3" name="tracknumTransition" min="1" max"'.$numOftracks.'" value="'.$_POST["currentTracknum"].'">';
+        echo ' / '.$numOftracks.' ';
+        echo '<input type="submit" value="<<" name="loadPreviousTracksScores">';
+        echo '<input type="submit" value=">>" name="loadNextTracksScores">';
+        echo '<input type="hidden" name="currentTracknum" value="'.$_POST["currentTracknum"].'">';
+        echo '<input type="hidden" name="tracknumTyped" value="'.$_POST["currentTracknum"].'">';
+        echo '</form>';
+        printTrackscores($recordsArray, $_POST["currentTracknum"]);
+    }
 
+    else
+    {
+        echo $tracksArray[$num-1]["trackName"];
+        echo '<form action="index.php" method="POST">';
+        echo '<input type="number" size="1" maxlength="3" name="tracknumTransition" min="1" max"'.$numOftracks.'" value="'.$num.'">';
+        echo ' / '.$numOftracks.' ';
+        echo '<input type="submit" value="<<" name="loadPreviousTracksScores">';
+        echo '<input type="submit" value=">>" name="loadNextTracksScores">';
+        echo '<input type="hidden" name="currentTracknum" value="'.$num.'">';
+        echo '</form>';
+        printTrackscores($recordsArray, $num);
+        //
+    }
+    $i = 1;
 
+    function printTrackscores($recordsArray, $i){
+        foreach ($recordsArray as $x => $record) {
+            if ($record["trackNum"] == $i)
+            {
+                $ms = $record["playerTime"];
+                $minute = floor($ms / 1000 / 60);
+                $second = (floor($ms / 1000) % 60);
+                $millisecond = $ms % 1000;
+                $milsec = $millisecond;
+                if (strlen($milsec) < 3) {
+                    $milsec = "0" .$milsec;
+                }     
 
-<script type="text/javascript">
+                $displaytime = $minute . ":" . $second . "," . $milsec;
+
+                echo "<td>".$record["playerName"]."</td><td>".$displaytime."</tr>";
+            }
+        }
+    }
+        ?>
+    </table>
+    <script type="text/javascript">
 /*
 var pointArray = [5, 4, 3, 2, 1, 0];
 var num = 1;
