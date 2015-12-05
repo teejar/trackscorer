@@ -140,6 +140,7 @@ TOP SCORES
             <th>Score</th>
         </tr>
         <?php
+        /*
             // print top scoring players
         for ($i=0;$i<5;$i++){
             $printScoreKey = $topScoresArrayKeys[$i];
@@ -149,8 +150,8 @@ TOP SCORES
             echo "<td>".$printScoreNick."</td><td>".$topScoresArray[$printScoreKey]."</td>";
             echo "</tr>";
         }
-        ?>
-        <?php
+        */
+                /*
         if(isset($_POST['loadmoreScores']))
         {
             printMoreScores($topScoresArrayKeys, $playerArray, $cp, $topScoresArray);
@@ -164,6 +165,7 @@ TOP SCORES
             echo   '</form>';
 
         }
+
                 //load rest of the stuff in the scoreboards
         function printMoreScores($a,$b,$c,$d){
             for ($i=5;$i<count($d);$i++){
@@ -175,14 +177,21 @@ TOP SCORES
                 echo "</tr>";
             }
         }
+        */
         ?>
-    </div>
+    </table>
+    <button>Show more scores</button>
+</div>
+
 <!--
 TRACKLIST
 -->
 <div id="trackLists"></div>
 <script src="jquery-2.1.4.min.js"></script>
 <table id="trackScoreTable">
+    <tr>
+
+    </tr>
     <tr>
         <th>Scores by track</th>
     </tr>
@@ -255,7 +264,6 @@ TRACKLIST
         //
     }
     $i = 1;
-
     function printTrackscores($recordsArray, $i){
         foreach ($recordsArray as $x => $record) {
             if ($record["trackNum"] == $i)
@@ -263,21 +271,40 @@ TRACKLIST
                 $ms = $record["playerTime"];
                 $minute = floor($ms / 1000 / 60);
                 $second = (floor($ms / 1000) % 60);
+                $sec = $second;
+                if (strlen($sec)< 2){
+                    $sec = "0".$sec;
+                }
                 $millisecond = $ms % 1000;
                 $milsec = $millisecond;
                 if (strlen($milsec) < 3) {
                     $milsec = "0" .$milsec;
                 }     
 
-                $displaytime = $minute . ":" . $second . "," . $milsec;
+                $displaytime = $minute . ":" . $sec . "," . $milsec;
 
                 echo "<td>".$record["playerName"]."</td><td>".$displaytime."</tr>";
             }
         }
     }
-        ?>
-    </table>
-    <script type="text/javascript">
+    ?>
+</table>
+
+
+<script type="text/javascript">
+
+$.post("printfirstscores.php", function(data){
+    $("#topScoreTable").append(data);
+        });
+
+
+    $("button").click(function(){
+        $.post("printmorescores.php", function(data){
+            $("#topScoreTable").append(data);
+        });
+    });
+
+
 /*
 var pointArray = [5, 4, 3, 2, 1, 0];
 var num = 1;
