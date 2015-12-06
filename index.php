@@ -10,299 +10,89 @@
     #trackLists{
         background-color: #565656;
     }
+    #ntoptable {
+        display: none;
+    }
     </style>
 </head>
 
 <body id="body">
-
-    <?php
-    require_once('./classes/tmfcolorparser.inc.php');
-
-    include "dbConnect.php";
-    mysqli_query($conn, "SET NAMES utf8");
-    $cp           = new TMFcolorParser();
-        // pelaajien  pisteet $topScoresArray['wd'] = 1;
-    $topScoresArray = array();
-    $recordsArray = array();
-    $tracksArray  = array();
-        // pelaajien nicknamet $topScoresArray['wd'] = "whited";
-    $playerArray  = array();
-    $playertopScoresArray = array();
-    $loopNumber         = 1;
-
-// get track names from database
-    $query = "SELECT * FROM exp_maps";
-
-    $result = mysqli_query($conn, $query);
-    $i      = 0;
-    if (mysqli_num_rows($result) > 0) {
-        while ($row = mysqli_fetch_assoc($result)) {
-
-            $tname = $row["challenge_name"];
-
-            $tracksArray[$i] = array(
-                "trackNum" => $row["challenge_id"],
-                "trackuid" => $row["challenge_uid"],
-                "trackName" => $cp->toHTML($tname, false, true)
-                );
-            $i++;
-        }
-    } else {
-        echo "0 results";
-    }
-
-        // get player times from database
-    $query  = "SELECT challenge_id, challenge_uid, challenge_name, record_playerlogin, record_score, player_nickname, player_login FROM exp_maps, exp_records, exp_players WHERE challenge_uid = record_challengeuid AND record_playerlogin = player_login ORDER BY challenge_id ASC, record_score ASC";
-    $result = mysqli_query($conn, $query);
-    $i      = 0;
-
-    $pointsArray = array(5, 4, 3, 2, 1);
-
-    $id         = -1;
-    $recsPerMap = 0;
-    $map        = 0;
-
-    if (mysqli_num_rows($result) > 0) {
-        $rank = 0;
-
-        while ($row = mysqli_fetch_assoc($result)) {
-                // tässä tehdään puskuri
-                // radan id vaihtuu aina kun rata vaihduu.. daa, eli jos radan id on eri kun bufferin id on kyseessä uusi rata
-            if ($row['challenge_id'] != $id) {
-                  //  echo "num recs @ ".$row['challenge_id'].": ".$recsPerMap."<br>";
-
-                    $rank       = 0;                    // rank nollataan
-                    $recsPerMap = 0;              // rank ratalaskuri nollataan (tää on turha, voi poistaa, mutta auttoi debuggaamaan)
-                    // bufferiin lisätään nykyinen uusi rataid, tämä pitää olla tämän iffin sisällä, tai muuten if-lause ei koskaan toteudu
-                    $id         = $row['challenge_id'];
-                }
-                // apumuuttujat
-                $login               = $row["player_login"];
-                $playerArray[$login] = $row["player_nickname"];
-
-                $playernickname = $row["player_nickname"];
-
-                // make array for showing track times
-                $recordsArray[$i] = array(
-                 "trackNum" => $row["challenge_id"],
-                 "playerName" => $cp->toHTML($playernickname, false, true),
-                 "playerLogin" => $row["player_login"],
-                 "trackuid" => $row["challenge_uid"],
-                 "playerTime" => $row["record_score"]
-                 );
-
-                    // tässä muunnetaan pelaajan rank-sijoitus, pisteiksi
-                    $points = 1;   // aina annetaan yksi piste
-                    if (isset($pointsArray[$rank])) {
-                        $points = $pointsArray[$rank]; // muussa tapauksessa point-arrayn mukaiset pisteet
-                    }
-
-                    // mikäli array:ssä on jo login
-                    if (array_key_exists($login, $topScoresArray)) {
-
-
-                    // mikäli arrayssä on login, lisätään pisteet
-                        $topScoresArray[$login] += $points;
-                    } else {
-
-                    // muussa tapauksessa sijoitetaan aloituspisteet
-                        $topScoresArray[$login] = $points;
-                    }
-
-                // lisätään laskurit
-                    $i++;
-                    $recsPerMap++;
-                }
-            } else {
-                echo "0 results";
-            }
-            $i = 0;
-
-            arsort($topScoresArray);
-
-            $topScoresArrayKeys = array_keys($topScoresArray); //array keys so that top scoring players can be printed
-
-            mysqli_close($conn);
-
-            //convert some arrays to javascript
-            //include "jsonEncodeScript.php";
-            ?>
 <!--
 TOP SCORES
 -->
 <div id="topScores">
-    <table id="topScoreTable">
-        <tr>
-            <th>Top Scores</th>
-        </tr>
-        <tr>
-            <th>Name</th>
-            <th>Score</th>
-        </tr>
-        <?php
-        /*
-            // print top scoring players
-        for ($i=0;$i<5;$i++){
-            $printScoreKey = $topScoresArrayKeys[$i];
-            $convertString = $playerArray[$printScoreKey];
-            $printScoreNick = $cp->toHTML($convertString, false, true);
-            echo "<tr>";
-            echo "<td>".$printScoreNick."</td><td>".$topScoresArray[$printScoreKey]."</td>";
-            echo "</tr>";
-        }
-        */
-                /*
-        if(isset($_POST['loadmoreScores']))
-        {
-            printMoreScores($topScoresArrayKeys, $playerArray, $cp, $topScoresArray);
-            echo "</table>" ;
-        }
-        else
-        {
-            echo "</table>";
-            echo  '<form action="index.php" method="POST">';
-            echo   '<input type="submit" value="Load more scores" name="loadmoreScores">';
-            echo   '</form>';
 
-        }
-
-                //load rest of the stuff in the scoreboards
-        function printMoreScores($a,$b,$c,$d){
-            for ($i=5;$i<count($d);$i++){
-                $printScoreKey = $a[$i];
-                $convertString = $b[$printScoreKey];
-                $printScoreNick = $c->toHTML($convertString, false, true);
-                echo "<tr>";
-                echo "<td>".$printScoreNick."</td><td>".$d[$printScoreKey]."</td>";
-                echo "</tr>";
-            }
-        }
-        */
-        ?>
-    </table>
-    <button>Show more scores</button>
 </div>
-
+<div id="navMore">Show more scores</div>
 <!--
 TRACKLIST
 -->
 <div id="trackLists"></div>
 <script src="jquery-2.1.4.min.js"></script>
+
+<span id="trackName"></span><span id="navPrevious">back</span><span id="navNext">next</span>
+
 <table id="trackScoreTable">
-    <tr>
-
-    </tr>
-    <tr>
-        <th>Scores by track</th>
-    </tr>
-    <tr>
-        <th>Name</th>
-        <th>Time</th>
-    </tr>
-
-    <?php
-
-//print_r($recordsArray[0]);
-//echo $recordsArray[0]["trackuid"];
-    $numOftracks = count($tracksArray);
-    $num = 1;
-    $typed = false;
-
-    //load number
-    if (isset($_POST['tracknumTransition']))
-    {
-        if ($_POST['tracknumTransition']>$numOftracks)
-        {
-            $typed = true;
-            $_POST["currentTracknum"] = $numOftracks;
-        }
-        if ($_POST['tracknumTransition'] != $_POST["currentTracknum"] && $_POST['tracknumTransition'] <= $numOftracks)
-        {
-            $typed = true;
-            $_POST["currentTracknum"] = $_POST['tracknumTransition'];
-        }
-    }
-    // load previous
-    if (isset($_POST['loadPreviousTracksScores']))
-    {
-        if ($typed == false) $_POST["currentTracknum"]--;
-        if ($_POST["currentTracknum"]==0 && $typed == false) $_POST["currentTracknum"] = $numOftracks;
-    }
-
-    //load next
-    if (isset($_POST['loadNextTracksScores']))
-    {
-        if ($typed == false) $_POST["currentTracknum"]++;
-        if ($_POST["currentTracknum"]>$numOftracks && $typed == false) $_POST["currentTracknum"] = 1;
-    }
-    if (isset($_POST['currentTracknum']))
-    {
-        $typed = false;
-        echo $tracksArray[$_POST["currentTracknum"]-1]["trackName"];
-        echo '<form action="index.php" method="POST">';
-        echo '<input type="number" size="1" maxlength="3" name="tracknumTransition" min="1" max"'.$numOftracks.'" value="'.$_POST["currentTracknum"].'">';
-        echo ' / '.$numOftracks.' ';
-        echo '<input type="submit" value="<<" name="loadPreviousTracksScores">';
-        echo '<input type="submit" value=">>" name="loadNextTracksScores">';
-        echo '<input type="hidden" name="currentTracknum" value="'.$_POST["currentTracknum"].'">';
-        echo '<input type="hidden" name="tracknumTyped" value="'.$_POST["currentTracknum"].'">';
-        echo '</form>';
-        printTrackscores($recordsArray, $_POST["currentTracknum"]);
-    }
-
-    else
-    {
-        echo $tracksArray[$num-1]["trackName"];
-        echo '<form action="index.php" method="POST">';
-        echo '<input type="number" size="1" maxlength="3" name="tracknumTransition" min="1" max"'.$numOftracks.'" value="'.$num.'">';
-        echo ' / '.$numOftracks.' ';
-        echo '<input type="submit" value="<<" name="loadPreviousTracksScores">';
-        echo '<input type="submit" value=">>" name="loadNextTracksScores">';
-        echo '<input type="hidden" name="currentTracknum" value="'.$num.'">';
-        echo '</form>';
-        printTrackscores($recordsArray, $num);
-        //
-    }
-    $i = 1;
-    function printTrackscores($recordsArray, $i){
-        foreach ($recordsArray as $x => $record) {
-            if ($record["trackNum"] == $i)
-            {
-                $ms = $record["playerTime"];
-                $minute = floor($ms / 1000 / 60);
-                $second = (floor($ms / 1000) % 60);
-                $sec = $second;
-                if (strlen($sec)< 2){
-                    $sec = "0".$sec;
-                }
-                $millisecond = $ms % 1000;
-                $milsec = $millisecond;
-                if (strlen($milsec) < 3) {
-                    $milsec = "0" .$milsec;
-                }     
-
-                $displaytime = $minute . ":" . $sec . "," . $milsec;
-
-                echo "<td>".$record["playerName"]."</td><td>".$displaytime."</tr>";
-            }
-        }
-    }
-    ?>
 </table>
-
-
 <script type="text/javascript">
+var navnum = 1;
+var navmoretoggle = false;
+<?php include "getTracksPlayedQuery.php" ?> // var tracksPlayed
 
-$.post("printfirstscores.php", function(data){
-    $("#topScoreTable").append(data);
-        });
+console.log(tracksPlayed);
 
+getTrackname(navnum);
+getTrackScores(navnum);
 
-    $("button").click(function(){
-        $.post("printmorescores.php", function(data){
-            $("#topScoreTable").append(data);
-        });
+$.post("printTopScores.php", function(data){
+    $("#topScores").append(data);
+});
+
+function getTrackname(navnum){
+    $.post( "printTrackName.php", { navnumber: navnum })
+    .done(function( data ) {
+        $("#trackName").html(data);
     });
+};
+
+function getTrackScores(navnum){
+    $.post( "printTrackScores.php", { navnumber: navnum })
+    .done(function( data ) {
+        $("#trackScoreTable").html(data);
+    });
+}
+
+
+
+//click functionality
+$("#navMore").click(function(){
+    if (navmoretoggle == true){
+        navmoretoggle = false;
+        $("#ntoptable").hide("slow");
+        $(this).text("Show more scores");
+    }
+    else{
+        navmoretoggle = true;
+        $("#ntoptable").show("slow");
+        $(this).text("Hide Scores");
+    }
+
+});
+
+$("#navNext").click(function(){
+    navnum++;
+    if (navnum >tracksPlayed) navnum = 1;
+    getTrackname(navnum);
+    getTrackScores(navnum);
+});
+
+$("#navPrevious").click(function(){
+    navnum--;
+    if (navnum==0) navnum = tracksPlayed;
+    getTrackname(navnum);
+    getTrackScores(navnum);
+});
+
 
 
 /*
