@@ -2,7 +2,11 @@
 include "scorequery.php";
 
 function printMoreScores($a,$b,$c,$d){
+    $position = 1;
     echo "<table id='top5table'>";
+    echo "<tr>";
+    echo "<th>#</th><th>Name</th><th>Total points</th>";
+    echo "</tr>";
     for ($i=0;$i<count($d);$i++){
         $printScoreKey = $a[$i];
         $convertString = $b[$printScoreKey];
@@ -10,13 +14,22 @@ function printMoreScores($a,$b,$c,$d){
         if ($i==5){
             echo "</table>";
             echo "<table id='ntoptable'>";
+            echo "<th></th><th></th><th></th>";
         }
-        if ($i<5) echo "<tr class='topfive'>";
-        else echo "<tr class='topn'>";
-        echo "<td>".$printScoreNick."</td><td>".$d[$printScoreKey]."</td>";
-        echo "</tr>";
-    }
-    echo "</table>";
+        if( $position == 1 )
+            echo "<tr class='first'>";
+        elseif( $position == 2 )
+            echo "<tr class='second'>";
+        elseif( $position == 3 )
+            echo "<tr class='third'>";
+        elseif( $position > 3 && $position % 2 == 1 )
+         echo "<tr class='tralt'>";
+     else         echo "<tr>";
+     echo "<td>".$position."</td><td>".$printScoreNick."</td><td>".$d[$printScoreKey]."</td>";
+     echo "</tr>";
+     $position++;
+ }
+ echo "</table>";
 }
 printMoreScores($topScoresArrayKeys, $playerArray, $cp, $topScoresArray);
 ?>
