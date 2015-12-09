@@ -7,7 +7,7 @@ function printTrackscores($recordsArray, $i, $pointsArray){
     $position = 1;
     $topscore;
     echo "<tr>";
-    echo "<th>#</th><th>Name</th><th>Time</th><th>Difference</th><th>Points</th>";
+    echo "<th style='width: 48px'>#</th><th>Name</th><th style='width: 128px'>Time</th><th style='width: 128px'>Difference</th><th style='width: 128px'>Points</th>";
     echo "</tr>";
     foreach ($recordsArray as $x => $record) {
         if ($position ==1)

@@ -5,7 +5,7 @@ function printMoreScores($a,$b,$c,$d){
     $position = 1;
     echo "<table id='top5table'>";
     echo "<tr>";
-    echo "<th>#</th><th>Name</th><th>Total points</th>";
+    echo "<th style='width: 48px' >#</th><th>Name</th><th style='width: 300px' >Total points</th>";
     echo "</tr>";
     for ($i=0;$i<count($d);$i++){
         $printScoreKey = $a[$i];
@@ -14,7 +14,7 @@ function printMoreScores($a,$b,$c,$d){
         if ($i==5){
             echo "</table>";
             echo "<table id='ntoptable'>";
-            echo "<th></th><th></th><th></th>";
+            echo "<th style='width: 48px' ></th><th></th><th style='width: 300px' ></th>";
         }
         if( $position == 1 )
             echo "<tr class='first'>";
