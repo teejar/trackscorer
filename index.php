@@ -2,21 +2,22 @@
 <html>
 <head>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-    <title>Trackmania</title>
+    <title>Trackmania tournament scores</title>
     <link href="./js/jquery-ui.css" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="trackScorerStyle.css"/>
 </head>
-
 <body id="body">
+    <div id="style"></div>
     <div class="parallax">
         <div class="parallax_layer parallax_layer--background">
-            <img src="bg2.jpg"></img>
+            <img id="imgone" src="bg.jpg"></img>
         </div>
-    <div class="parallax_layer parallax_layer--main">
-        <div id="main">
+        <div class="parallax_layer parallax_layer--main">
+            <div id="main">
 <!--
 TOP SCORES
 -->
+<div id="maintext"><img src="tournament_text.png"></img></div>
+<div id="toptext">Tournament Winners</div>
 <div id="topScores"></div>
 <div id="navcontainer">
     <button class="navbutton" id="navMore">Show more scores</button>
@@ -24,13 +25,10 @@ TOP SCORES
 <!--
 TRACKLIST
 -->
-
+<div id="tracktext">Track Winners</div>
 <div id="navbar">
     <div id="namedisplay"></div><div id="navbuttons"><button class="navbutton" id="navPrevious"><span> back</span></button><button class="navbutton" id="navNext"><span>next </span></button></div>
 </div>
-
-
-
 <div id="trackScoreContainer">
     <table id="trackScoreTable">
     </table>
@@ -43,20 +41,28 @@ SCRIPT
 -->
 <script src="./js/jquery-2.1.4.min.js"></script>
 <script src="./js/jquery-ui.js"></script>
+
 <script type="text/javascript">
 var navnum = 1;
 var navmoretoggle = false;
 var once = false;
 <?php include "getTracksPlayedQuery.php" ?> // var tracksPlayed
 
-getTrackname(navnum);
-getTrackScores(navnum);
-
-$.post("printTopScores.php", function(data){
+var isChromium = window.chrome,
+vendorName = window.navigator.vendor,
+isOpera = window.navigator.userAgent.indexOf("OPR") > -1,
+isIEedge = window.navigator.userAgent.indexOf("Edge") > -1;
+if(isChromium !== null && isChromium !== undefined && vendorName === "Google Inc." && isOpera == false && isIEedge == false) {
+    $("#style").load("trackScorerStylechrome.html");
+} else { 
+   // not Google chrome 
+   $("#style").load("trackScorerStylehtml.html");
+}
+   $.post("printTopScores.php", function(data){
     $("#topScores").append(data);
 });
 
-function getTrackname(navnum){
+   function getTrackname(navnum){
     $.post( "printTrackName.php", { navnumber: navnum })
     .done(function( data ) {
         $("#namedisplay").html(data);
@@ -64,8 +70,8 @@ function getTrackname(navnum){
         trackinputfuntionality();
         once = true;
     });
-
-};
+}
+getTrackname(navnum);
 
 function getTrackScores(navnum){
     $.post( "printTrackScores.php", { navnumber: navnum })
@@ -73,9 +79,9 @@ function getTrackScores(navnum){
         $("#trackScoreTable").html(data);
     });
 }
+getTrackScores(navnum);
 
 //click functionality
-
 function trackinputfuntionality(){
     $(".tracknumberdisplay").change(function(){
         var input = $("input").val();
@@ -86,8 +92,7 @@ function trackinputfuntionality(){
         getTrackScores(navnum);
 
     });
-};
-
+}
 $("#navMore").click(function(){
     if (navmoretoggle == true){
         navmoretoggle = false;
@@ -100,20 +105,19 @@ $("#navMore").click(function(){
         $(this).text("Hide Scores");
     }
 });
-
 $("#navNext").click(function(){
     navnum++;
     if (navnum >tracksPlayed) navnum = 1;
     getTrackname(navnum);
     getTrackScores(navnum);
 });
-
 $("#navPrevious").click(function(){
     navnum--;
     if (navnum==0) navnum = tracksPlayed;
     getTrackname(navnum);
     getTrackScores(navnum);
 });
+
 </script>
 </body>
 </html>
